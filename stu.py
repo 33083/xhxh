@@ -1,163 +1,7 @@
-# # ==============================================
-# # 前9天综合实战：学生信息管理系统
-# # 知识点：Python基础 + 面向对象 + MySQL + pymysql
-# #        文件操作 + 异常处理 + 函数 + 循环菜单
-# # ==============================================
-# import pymysql
-# import time
-#
-# # 学生管理类（面向对象）
-# class StudentManager:
-#     # 初始化：连接数据库
-#     def __init__(self):
-#         try:
-#             self.conn = pymysql.connect(
-#                 host="localhost",
-#                 user="root",          # 改成自己的MySQL用户名
-#                 password="root123456",    #
-#                 database="student_db",
-#                 charset="utf8mb4"
-#             )
-#             self.cursor = self.conn.cursor()
-#             print("✅ 数据库连接成功")
-#         except Exception as e:
-#             print("❌ 数据库连接失败：", e)
-#
-#     # 日志写入文件（文件操作知识点）
-#     def write_log(self, msg):
-#         now = time.strftime("%Y-%m-%d %H:%M:%S")
-#         with open("student_log.txt", "a", encoding="utf-8") as f:
-#             f.write(f"[{now}] {msg}\n")
-#
-#     # 1. 添加学生
-#     def add_student(self, stu_id, name, age, major):
-#         try:
-#             sql = "INSERT INTO student(stu_id, name, age, major) VALUES(%s,%s,%s,%s)"
-#             self.cursor.execute(sql, (stu_id, name, age, major))
-#             self.conn.commit()
-#             print("✅ 添加成功")
-#             self.write_log(f"添加学生：{stu_id} {name}")
-#         except Exception as e:
-#             self.conn.rollback()
-#             print("❌ 添加失败，学号重复或格式错误")
-#
-#     # 2. 查询所有学生
-#     def show_all(self):
-#         sql = "SELECT * FROM student"
-#         self.cursor.execute(sql)
-#         students = self.cursor.fetchall()
-#
-#         if not students:
-#             print("暂无学生数据")
-#             return
-#
-#         print("\n======= 学生信息列表 =======")
-#         for s in students:
-#             print(f"学号：{s[1]} | 姓名：{s[2]} | 年龄：{s[3]} | 专业：{s[4]}")
-#
-#     # 3. 按学号查询
-#     def search_by_id(self, stu_id):
-#         sql = "SELECT * FROM student WHERE stu_id=%s"
-#         self.cursor.execute(sql, stu_id)
-#         res = self.cursor.fetchone()
-#
-#         if res:
-#             print(f"\n查询结果：学号 {res[1]} 姓名 {res[2]} 年龄 {res[3]} 专业 {res[4]}")
-#         else:
-#             print("未找到该学生")
-#
-#     # 4. 修改学生信息
-#     def update_student(self, stu_id, new_age, new_major):
-#         try:
-#             sql = "UPDATE student SET age=%s, major=%s WHERE stu_id=%s"
-#             self.cursor.execute(sql, (new_age, new_major, stu_id))
-#             self.conn.commit()
-#
-#             if self.cursor.rowcount > 0:
-#                 print("✅ 修改成功")
-#                 self.write_log(f"修改学生：{stu_id}")
-#             else:
-#                 print("未找到该学生")
-#         except:
-#             self.conn.rollback()
-#             print("❌ 修改失败")
-#
-#     # 5. 删除学生
-#     def delete_student(self, stu_id):
-#         try:
-#             sql = "DELETE FROM student WHERE stu_id=%s"
-#             self.cursor.execute(sql, stu_id)
-#             self.conn.commit()
-#
-#             if self.cursor.rowcount > 0:
-#                 print("✅ 删除成功")
-#                 self.write_log(f"删除学生：{stu_id}")
-#             else:
-#                 print("未找到该学生")
-#         except:
-#             self.conn.rollback()
-#             print("❌ 删除失败")
-#
-#     # 关闭数据库
-#     def close(self):
-#         self.cursor.close()
-#         self.conn.close()
-#
-# # ====================== 主菜单 ======================
-# def main():
-#     sm = StudentManager()
-#
-#     while True:
-#         print("\n======= 学生信息管理系统 =======")
-#         print("1. 添加学生")
-#         print("2. 查看所有学生")
-#         print("3. 按学号查询学生")
-#         print("4. 修改学生信息")
-#         print("5. 删除学生")
-#         print("0. 退出系统")
-#
-#         choice = input("请输入功能编号：")
-#
-#         if choice == "1":
-#             sid = input("请输入学号：")
-#             name = input("请输入姓名：")
-#             age = input("请输入年龄：")
-#             major = input("请输入专业：")
-#             sm.add_student(sid, name, age, major)
-#
-#         elif choice == "2":
-#             sm.show_all()
-#
-#         elif choice == "3":
-#             sid = input("请输入要查询的学号：")
-#             sm.search_by_id(sid)
-#
-#         elif choice == "4":
-#             sid = input("请输入要修改的学号：")
-#             age = input("请输入新年龄：")
-#             major = input("请输入新专业：")
-#             sm.update_student(sid, age, major)
-#
-#         elif choice == "5":
-#             sid = input("请输入要删除的学号：")
-#             sm.delete_student(sid)
-#
-#         elif choice == "0":
-#             sm.close()
-#             print("系统已退出")
-#             break
-#
-#         else:
-#             print("输入无效，请输入 0-5 之间的数字")
-#
-# # 程序入口
-# if __name__ == "__main__":
-#     main()
-
 # ==============================================
 # 双表版本：学生信息 + 成绩分离管理系统
 # 核心规范：学生表(基础信息) + 成绩表(成绩数据) 分表关联
-# 知识点：面向对象 + MySQL双表联查 + 外键约束 + 日志 + 事务
+# 知识点：面向对象 + MySQL双表联查 + 外键约束 + 日志 + 事务 + 数据库登录系统
 # ==============================================
 import pymysql
 import time
@@ -170,7 +14,7 @@ class StudentManager:
             self.conn = pymysql.connect(
                 host="localhost",
                 user="root",          # 改为自己的MySQL账号
-                password="123456",# 改为自己的MySQL密码
+                password="123456",    # 改为自己的MySQL密码
                 database="student_db",
                 charset="utf8mb4",
                 port=3307,
@@ -207,7 +51,6 @@ class StudentManager:
 
     # 2. 查看所有学生（联查双表，展示完整信息+成绩）
     def show_all_student(self):
-        # 双表联查，通过学号关联
         sql = """
         SELECT s.stu_id, s.name, s.age, s.major, sc.chinese, sc.math, sc.english
         FROM student s
@@ -289,7 +132,6 @@ class StudentManager:
     # 6. 删除学生信息（外键级联删除，成绩自动删除）
     def delete_student(self, stu_id):
         try:
-            # 只需删除学生表数据，成绩表会自动级联删除
             sql = "DELETE FROM student WHERE stu_id=%s"
             self.cursor.execute(sql, stu_id)
             self.conn.commit()
@@ -303,25 +145,69 @@ class StudentManager:
             self.conn.rollback()
             print("❌ 删除失败")
 
+    # 查看所有操作日志（管理员功能）
+    def show_all_logs(self):
+        try:
+            with open("student_log.txt", "r", encoding="utf-8") as f:
+                logs = f.read()
+                if logs:
+                    print("\n========== 系统操作日志 ==========")
+                    print(logs)
+                else:
+                    print("暂无日志记录")
+        except FileNotFoundError:
+            print("日志文件不存在，尚无操作记录")
+        except Exception as e:
+            print(f"读取日志失败: {e}")
+
+    # 添加账号（管理员功能）
+    def add_account(self):
+        username = input("请输入用户名：")
+        password = input("请输入密码：")
+        role = input("请输入角色（admin/student）：")
+        try:
+            sql = "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)"
+            self.cursor.execute(sql, (username, password, role))
+            self.conn.commit()
+            print("✅ 账号添加成功")
+            self.write_log(f"添加账号：{username} 角色：{role}")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"❌ 添加失败: {e}")
+
+    # 登录验证（表名改为 users）
+    def login(self, username, password):
+        try:
+            sql = "SELECT role FROM users WHERE username=%s AND password=%s"
+            self.cursor.execute(sql, (username, password))
+            user = self.cursor.fetchone()
+            return user['role'] if user else None
+        except Exception as e:
+            print("❌ 登录查询失败:", e)
+            return None
+
     # 关闭数据库连接
     def close(self):
         self.cursor.close()
         self.conn.close()
         print("✅ 数据库连接已关闭")
 
-# 主菜单函数
-def main():
-    sm = StudentManager()
+
+# ====================== 菜单函数 ======================
+def admin_menu(sm):
+    """管理员菜单（全部功能）"""
     while True:
-        print("\n======= 学生信息成绩管理系统【双表版】=======")
+        print("\n======= 学生信息成绩管理系统【管理员版】=======")
         print("1. 添加学生（含成绩录入）")
         print("2. 查看所有学生完整信息")
         print("3. 按学号查询学生成绩")
         print("4. 修改学生基础信息")
         print("5. 修改学生成绩信息")
         print("6. 删除学生（含成绩）")
+        print("7. 查看所有操作日志")
+        print("8. 添加账号")
         print("0. 退出系统")
-        print("==========================================")
+        print("==============================================")
 
         choice = input("请输入功能编号：")
 
@@ -359,13 +245,70 @@ def main():
             sid = input("请输入要删除的学号：")
             sm.delete_student(sid)
 
+        elif choice == "7":
+            sm.show_all_logs()
+
+        elif choice == "8":
+            sm.add_account()
+
         elif choice == "0":
             sm.close()
             print("👋 系统退出成功，再见！")
             break
 
         else:
-            print("❌ 输入无效，请输入0-6的数字！")
+            print("❌ 输入无效，请输入0-8的数字！")
+
+
+def student_menu(sm):
+    """学生菜单（仅查看和查询）"""
+    while True:
+        print("\n======= 学生信息成绩管理系统【学生版】=======")
+        print("1. 查看所有学生完整信息")
+        print("2. 按学号查询学生成绩")
+        print("0. 退出系统")
+        print("==============================================")
+
+        choice = input("请输入功能编号：")
+
+        if choice == "1":
+            sm.show_all_student()
+
+        elif choice == "2":
+            sid = input("请输入查询学号：")
+            sm.search_score_by_id(sid)
+
+        elif choice == "0":
+            sm.close()
+            print("👋 系统退出成功，再见！")
+            break
+
+        else:
+            print("❌ 输入无效，请输入0-2的数字！")
+
+
+# ====================== 主程序 ======================
+def main():
+    sm = StudentManager()
+
+    # 登录循环
+    while True:
+        print("\n======= 学生信息管理系统登录 =======")
+        username = input("用户名：")
+        password = input("密码：")
+        role = sm.login(username, password)
+
+        if role == 'admin':
+            print("✅ 管理员登录成功")
+            admin_menu(sm)
+            break
+        elif role == 'student':
+            print("✅ 学生登录成功")
+            student_menu(sm)
+            break
+        else:
+            print("❌ 用户名或密码错误，请重新登录")
+
 
 if __name__ == "__main__":
     main()
