@@ -1,8 +1,14 @@
-# 图书馆管理系统
+# # 图书馆管理系统
 import pymysql
 import time
+import os
+
 class bookManager:
     def __init__(self):
+        # 确保日志目录存在
+        log_dir = "sxun"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
         try:
             self.conn = pymysql.connect(
                 host="localhost",
@@ -14,9 +20,9 @@ class bookManager:
                 autocommit=False
             )
             self.cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-            print(" 数据库连接成功")
+            print("数据库连接成功")
         except Exception as e:
-            print(" 数据库连接失败：", e)
+            print("数据库连接失败：", e)
     
     # 日志
     def write_log(self, msg):
@@ -39,6 +45,7 @@ class bookManager:
             print("日志文件不存在，尚无操作记录")
         except Exception as e:
             print(f"读取日志失败: {e}")
+    
     # 添加书籍
     def add_book(self, book_id, book_name, name, major):
         try:
@@ -49,17 +56,18 @@ class bookManager:
                 print("图书编号已存在！请重新输入")
                 return
             else:
-                sql = "INSERT INTO book(book_id, book_name, name,major,state) VALUES(%s,%s,%s,%s,%s)"
-                self.cursor.execute(sql, (book_id, book_name, name,major,'可借阅'))
+                sql = "INSERT INTO book(book_id, book_name, name, major, state) VALUES(%s,%s,%s,%s,%s)"
+                self.cursor.execute(sql, (book_id, book_name, name, major, '可借阅'))
                 self.conn.commit()
                 print("图书添加成功")
                 self.write_log(f"添加图书：{book_id} {book_name} {name} {major}")
         except Exception as e:
             self.conn.rollback()
-            print("添加失败！学号重复或数据格式错误")
+            print("添加失败：", e)
+    
     def show_all_book(self):
         sql = """
-        SELECT b.book_id, b.book_name,b.name, b.major, b.state  FROM book b
+        SELECT b.book_id, b.book_name, b.name, b.major, b.state FROM book b
         """
         self.cursor.execute(sql)
         res = self.cursor.fetchall()
@@ -77,7 +85,7 @@ class bookManager:
     def search_id(self):
         book_id = input("请输入查询书籍编号：")
         sql = """
-        SELECT b.book_id, b.book_name,b.name, b.major, b.state
+        SELECT b.book_id, b.book_name, b.name, b.major, b.state
         FROM book b
         WHERE b.book_id = %s
         """
@@ -95,23 +103,22 @@ class bookManager:
         else:
             print("❌ 未查询到该书籍信息！")
             self.write_log(f"查询书籍数据：图书编号{book_id} 未查询到")
-            return
-     
+    
     # 按书名模糊查询
     def search_book_name(self):
         book_name = input("请输入查询书籍书名：")
         sql = """
-        SELECT b.book_id, b.book_name,b.name, b.major, b.state
+        SELECT b.book_id, b.book_name, b.name, b.major, b.state
         FROM book b
         WHERE b.book_name like %s
         """
-        book_name = f"%{book_name}%"
-        self.cursor.execute(sql, (book_name,))
+        search_pattern = f"%{book_name}%"
+        self.cursor.execute(sql, (search_pattern,))
         res = self.cursor.fetchall()
 
         if res:
             print(f"\n========== 模糊查询结果（关键词：{book_name}）==========")
-            for row in res: 
+            for row in res:
                 print("\n========== 书籍详情 ==========")
                 print(f"书籍编号：{row['book_id']}")
                 print(f"书名：{row['book_name']}")
@@ -122,12 +129,12 @@ class bookManager:
         else:
             print("❌ 未查询到该书籍信息！")
             self.write_log(f"查询书籍数据：图书书名{book_name} 未查询到")
-            return
+    
     # 按作者查询
     def search_name(self):
         name = input("请输入查询书籍作者：")
         sql = """
-        SELECT b.book_id, b.book_name,b.name, b.major, b.state
+        SELECT b.book_id, b.book_name, b.name, b.major, b.state
         FROM book b
         WHERE b.name = %s
         """
@@ -135,7 +142,7 @@ class bookManager:
         res = self.cursor.fetchall()
 
         if res:
-            for row in res: 
+            for row in res:
                 print("\n========== 书籍详情 ==========")
                 print(f"书籍编号：{row['book_id']}")
                 print(f"书名：{row['book_name']}")
@@ -146,12 +153,12 @@ class bookManager:
         else:
             print("❌ 未查询到该书籍信息！")
             self.write_log(f"查询书籍数据：图书作者{name} 未查询到")
-            return
+    
     # 按分类查询
     def search_major(self):
         major = input("请输入查询书籍分类：")
         sql = """
-        SELECT b.book_id, b.book_name,b.name, b.major, b.state
+        SELECT b.book_id, b.book_name, b.name, b.major, b.state
         FROM book b
         WHERE b.major = %s
         """
@@ -159,7 +166,7 @@ class bookManager:
         res = self.cursor.fetchall()
 
         if res:
-            for row in res: 
+            for row in res:
                 print("\n========== 书籍详情 ==========")
                 print(f"书籍编号：{row['book_id']}")
                 print(f"书名：{row['book_name']}")
@@ -170,44 +177,51 @@ class bookManager:
         else:
             print("❌ 未查询到该书籍信息！")
             self.write_log(f"查询书籍数据：图书分类{major} 未查询到")
-            return
+    
     # 更新书籍信息
-    def update_book(self, book_id, book_name, name,major):
+    def update_book(self, book_id, book_name, name, major):
         sql = """
         UPDATE book
         SET book_name = %s, name = %s, major = %s
         WHERE book_id = %s
         """
-        self.cursor.execute(sql, (book_name, name,major, book_id))
+        self.cursor.execute(sql, (book_name, name, major, book_id))
         self.conn.commit()
         print("图书信息更新成功")
         self.write_log(f"更新书籍数据：图书编号{book_id} {book_name} {name} {major}")
     
-    
-    # 删除书籍信息
+    # 删除书籍信息（增加已借出检查）
     def delete_book(self, book_id):
-        print('1.删除')
-        print('2.取消')
-        i=int(input('请输入您的选择：1/2'))
-        if i==1:
+        state = self.ktate(book_id)
+        if state == '已借出':
+            print("该图书已被借出，无法删除，请先归还后再删除！")
+            self.write_log(f"删除书籍数据：图书编号{book_id} 失败（已借出）")
+            return
+        print('1. 删除')
+        print('2. 取消')
+        try:
+            i = int(input('请输入您的选择：1/2'))
+        except ValueError:
+            print("请输入数字1或2")
+            return
+        if i == 1:
             try:
                 sql = "DELETE FROM book WHERE book_id=%s"
                 self.cursor.execute(sql, book_id)
                 self.conn.commit()
-
                 if self.cursor.rowcount > 0:
-                  print("书籍信息已全部删除")
-                  self.write_log(f"删除书籍数据：图书编号{book_id}")
+                    print("书籍信息已全部删除")
+                    self.write_log(f"删除书籍数据：图书编号{book_id}")
                 else:
-                     print("未找到该书籍")
+                    print("未找到该书籍")
             except Exception as e:
-               self.conn.rollback()
-               print(f"删除失败：{e}")
-        elif i==2:
-            print(" 操作取消")
+                self.conn.rollback()
+                print(f"删除失败：{e}")
+        elif i == 2:
+            print("操作取消")
             self.write_log(f"删除书籍数据：图书编号{book_id} 操作取消")
         else:
-         print('请输入1或2')
+            print('请输入1或2')
     
     # 登录方法
     def login(self, username, password):
@@ -216,18 +230,15 @@ class bookManager:
         result = self.cursor.fetchone()
         if result:
             return result['role']
-
         return None
-      
 
     # 判断账号是否重复
     def check_account(self, username):
         sql = "SELECT username FROM admin WHERE username=%s"
         self.cursor.execute(sql, (username,))
         result = self.cursor.fetchone()
-        if result:
-            return True
-        return False
+        return result is not None
+    
     # 添加用户账号
     def add_account(self):
         username = input("请输入新用户名：")
@@ -235,17 +246,16 @@ class bookManager:
         if self.check_account(username):
             print("账号已存在，请重新输入")
             return
-        else:
-            try:
-                sql = "INSERT INTO admin(username, password, role) VALUES(%s, %s, %s)"
-                self.cursor.execute(sql, (username, password, 'student'))
-                self.conn.commit()
-                print("账号添加成功")
-                self.write_log(f"添加账号：{username} student")
-            except Exception as e:
-                self.conn.rollback()
-                print(f"添加失败：{e}")
-                self.write_log(f"添加失败：{e}")
+        try:
+            sql = "INSERT INTO admin(username, password, role) VALUES(%s, %s, %s)"
+            self.cursor.execute(sql, (username, password, 'student'))
+            self.conn.commit()
+            print("账号添加成功")
+            self.write_log(f"添加账号：{username} student")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"添加失败：{e}")
+            self.write_log(f"添加失败：{e}")
     
     # 关闭连接
     def close(self):
@@ -253,93 +263,106 @@ class bookManager:
             self.cursor.close()
         if self.conn:
             self.conn.close()
-    # 查看状态
-    def ktate(self,book_id):
+    
+    # 查看图书状态
+    def ktate(self, book_id):
         sql = "SELECT state FROM book WHERE book_id=%s"
         self.cursor.execute(sql, (book_id,))
         result = self.cursor.fetchone()
-        if result:
-            return result['state']
-        return None
+        return result['state'] if result else None
 
-    # 图书借阅
+    # 图书借阅（无参数）
     def jiey(self):
         book_id = input("请输入要借阅的书籍编号：")
-        book_name=input("请输入要借阅的书籍名称：")
-        role = self.ktate(book_id)
-        if role == '可借阅':
-        # 1. 更新图书状态为已借出
+        book_name = input("请输入要借阅的书籍名称：")
+        state = self.ktate(book_id)
+        if state == '可借阅':
             sql_update = "UPDATE book SET state = '已借出' WHERE book_id = %s"
             self.cursor.execute(sql_update, (book_id,))
-        
-        # 2. 插入借阅记录（需要当前登录用户名，假设存在 self.current_user）
-        # 你需要在登录成功后保存用户名到实例变量，例如 self.current_username
             if not hasattr(self, 'current_username'):
-               print("错误：未获取到当前登录用户")
-               return
+                print("错误：未获取到当前登录用户")
+                return
             sql_insert = """
-              INSERT INTO borrower(username, book_id,book_name, jieytime, guihuantime)
-               VALUES (%s, %s, %s,  NOW(), NULL)
-             """
-            self.cursor.execute(sql_insert, (self.current_username, book_id,book_name))
+                INSERT INTO borrower(username, book_id, book_name, jieytime, guihuantime)
+                VALUES (%s, %s, %s, NOW(), NULL)
+            """
+            self.cursor.execute(sql_insert, (self.current_username, book_id, book_name))
             self.conn.commit()
             print("借阅成功")
             self.write_log(f"借阅图书：{book_id} 已借出，借阅人：{self.current_username}")
-        elif role == '已借出':
+        elif state == '已借出':
             print("不可借阅，图书已被借出")
             self.write_log(f"借阅图书：{book_id} 不可借阅")
         else:
             print("图书不存在")
             self.write_log(f"借阅图书：{book_id} 不存在")
-    #  图书归还
+    
+    # 图书归还（无参数）
     def guihuan(self):
         book_id = input("请输入要归还的书籍编号：")
-        role = self.ktate(book_id)
-        if role == '已借出':
-        # 1. 更新图书状态
+        state = self.ktate(book_id)
+        if state == '已借出':
             sql_update_book = "UPDATE book SET state = '可借阅' WHERE book_id = %s"
             self.cursor.execute(sql_update_book, (book_id,))
-        
-        # 2. 更新借阅记录中的实际归还时间（找到未归还的那条记录）
             sql_update_borrower = """
-            UPDATE borrower 
-            SET guihuantime = NOW() 
-            WHERE book_id = %s AND guihuantime IS NULL
-        """
+                UPDATE borrower 
+                SET guihuantime = NOW() 
+                WHERE book_id = %s AND guihuantime IS NULL
+            """
             self.cursor.execute(sql_update_borrower, (book_id,))
             self.conn.commit()
-        
             print("归还成功")
             self.write_log(f"归还图书：{book_id} 已归还")
-        elif role == '可借阅':
+        elif state == '可借阅':
             print("图书已经是可借阅状态，无需重复归还")
         else:
             print("图书不存在")
             self.write_log(f"归还图书：{book_id} 不存在")
   
-# 查看借阅日记
-    def show_borrow(self):
-        sql = """
-            SELECT 
-            id, username, book_id,book_name, jieytime, 
-            DATE_ADD(jieytime, INTERVAL 7 DAY) AS yingshudate,
-            guihuantime
-            FROM borrower
-        """
-        self.cursor.execute(sql)
-        results = self.cursor.fetchall()
-        if results:
-            print("\n========== 借阅记录 ==========")
-            for row in results:                    
-              yingshu = row['yingshudate']
-              return_time = row['guihuantime'] if row['guihuantime'] else '未归还'
-              print(f"记录ID：{row['id']} | 用户名：{row['username']} | 书籍编号：{row['book_id']} | 书名称：{row['book_name']} | 借阅时间：{row['jieytime']} | 应归还：{yingshu} | 实际归还：{return_time}")
-              self.write_log(f"查看借阅记录：{row['id']}")
-            
+    # 查看借阅记录（管理员看全部，学生只看自己的）
+    def show_borrow(self, for_admin=True):
+        if for_admin:
+            sql = """
+                SELECT id, username, book_id, book_name, jieytime, 
+                       DATE_ADD(jieytime, INTERVAL 7 DAY) AS yingshudate,
+                       guihuantime
+                FROM borrower
+            """
+            self.cursor.execute(sql)
+            results = self.cursor.fetchall()
+            if results:
+                print("\n========== 借阅记录（全部） ==========")
+                for row in results:
+                    yingshu = row['yingshudate']
+                    return_time = row['guihuantime'] if row['guihuantime'] else '未归还'
+                    print(f"记录ID：{row['id']} | 用户名：{row['username']} | 书籍编号：{row['book_id']} | 书名称：{row['book_name']} | 借阅时间：{row['jieytime']} | 应归还：{yingshu} | 实际归还：{return_time}")
+                    self.write_log(f"查看借阅记录：{row['id']}")
+            else:
+                print("暂无借阅记录")
         else:
-            print("暂无借阅记录")
-def admin_menu(sm):
+            if not hasattr(self, 'current_username') or not self.current_username:
+                print("无法获取当前用户信息")
+                return
+            sql = """
+                SELECT id, username, book_id, book_name, jieytime, 
+                       DATE_ADD(jieytime, INTERVAL 7 DAY) AS yingshudate,
+                       guihuantime
+                FROM borrower
+                WHERE username = %s
+            """
+            self.cursor.execute(sql, (self.current_username,))
+            results = self.cursor.fetchall()
+            if results:
+                print(f"\n========== 我的借阅记录（{self.current_username}）==========")
+                for row in results:
+                    yingshu = row['yingshudate']
+                    return_time = row['guihuantime'] if row['guihuantime'] else '未归还'
+                    print(f"记录ID：{row['id']} | 书名：{row['book_name']} | 借阅时间：{row['jieytime']} | 应归还：{yingshu} | 实际归还：{return_time}")
+                    self.write_log(f"查看个人借阅记录：{row['id']}")
+            else:
+                print("暂无借阅记录")
 
+def admin_menu(sm):
     while True:
         print("\n======= 图书管理系统【管理员版】=======")
         print("1. 添加书籍")
@@ -349,9 +372,9 @@ def admin_menu(sm):
         print("5. 删除书籍")
         print("6. 查看所有操作日志")
         print("7. 注册学生账号")
-        print('8.图书借阅')
-        print('9.图书归还')
-        print('10.查看借阅记录')
+        print("8. 图书借阅")
+        print("9. 图书归还")
+        print("10. 查看借阅记录")
         print("0. 退出系统")
         print("==============================================")
 
@@ -368,25 +391,24 @@ def admin_menu(sm):
             sm.show_all_book()
 
         elif choice == "3":
-            print('1.按编号查询')
-            print('2.按书名查询')
-            print('3.按作者查询')
-            print('4.按分类查询')
-            print('5.返回主菜单')
-            choice = input("请输入查询方式：")
-            if choice == "1":
+            print('1. 按编号查询')
+            print('2. 按书名查询')
+            print('3. 按作者查询')
+            print('4. 按分类查询')
+            print('5. 返回主菜单')
+            sub_choice = input("请输入查询方式：")
+            if sub_choice == "1":
                 sm.search_id()
-            elif choice == "2":
+            elif sub_choice == "2":
                 sm.search_book_name()
-            elif choice == "3":
+            elif sub_choice == "3":
                 sm.search_name()
-            elif choice == "4":
+            elif sub_choice == "4":
                 sm.search_major()
-            elif choice == "5":
-                break
+            elif sub_choice == "5":
+                continue
             else:
-                print("输入无效，请输入1-4的数字！")
-            
+                print("输入无效，请输入1-5的数字！")
 
         elif choice == "4":
             book_id = input("请输入要修改的书籍编号：")
@@ -405,14 +427,14 @@ def admin_menu(sm):
         elif choice == "7":
             sm.add_account()
 
-        elif choice =='8':
+        elif choice == "8":
             sm.jiey()
 
-        elif choice =='9':
+        elif choice == "9":
             sm.guihuan()
 
-        elif choice =='10':
-            sm.show_borrow()
+        elif choice == "10":
+            sm.show_borrow(for_admin=True)
 
         elif choice == "0":
             sm.close()
@@ -420,18 +442,17 @@ def admin_menu(sm):
             break
 
         else:
-            print("输入无效，请输入0-7的数字！")
-
+            print("输入无效，请输入0-10的数字！")
 
 def student_menu(sm):
     while True:
         print("\n======= 图书管理系统【学生版】=======")
         print("1. 查看所有图书")
         print("2. 查询书籍")
-        print('3. 图书借阅')
-        print('4. 图书归还')
-        print('5. 注册账号')
-        print('6. 查看借阅记录')
+        print("3. 图书借阅")
+        print("4. 图书归还")
+        print("5. 注册账号")
+        print("6. 查看我的借阅记录")
         print("0. 退出系统")
         print("==============================================")
 
@@ -441,49 +462,47 @@ def student_menu(sm):
             sm.show_all_book()
 
         elif choice == "2":
-            print('1.按编号查询')
-            print('2.按书名查询')
-            print('3.按作者查询')
-            print('4.按分类查询')
-            print('5.返回主菜单')
-            choice = input("请输入查询方式：")
-            if choice == "1":
+            print('1. 按编号查询')
+            print('2. 按书名查询')
+            print('3. 按作者查询')
+            print('4. 按分类查询')
+            print('5. 返回主菜单')
+            sub_choice = input("请输入查询方式：")
+            if sub_choice == "1":
                 sm.search_id()
-            elif choice == "2":
+            elif sub_choice == "2":
                 sm.search_book_name()
-            elif choice == "3":
+            elif sub_choice == "3":
                 sm.search_name()
-            elif choice == "4":
+            elif sub_choice == "4":
                 sm.search_major()
-            elif choice == "5":
-                break
+            elif sub_choice == "5":
+                continue
             else:
-                print("输入无效，请输入1-4的数字！")
+                print("输入无效，请输入1-5的数字！")
 
         elif choice == "3":
-            book_id = input("请输入要借阅的书籍编号：")
-            sm.jiey(book_id,'已借出')
+            sm.jiey()
 
         elif choice == "4":
-            book_id = input("请输入要归还的书籍编号：")
-            sm.guihuan(book_id)
+            sm.guihuan()
 
         elif choice == "5":
             sm.add_account()
 
         elif choice == "6":
-            sm.show_borrow()
+            sm.show_borrow(for_admin=False)
+
         elif choice == "0":
             sm.close()
             print("系统退出成功，再见！")
             break
 
         else:
-            print("输入无效，请输入0-5的数字！")
+            print("输入无效，请输入0-6的数字！")
+
 def main():
     sm = bookManager()
-
-    # 登录循环
     while True:
         print("\n======= 图书管理系统登录 =======")
         username = input("用户名：")
@@ -505,6 +524,5 @@ def main():
         else:
             print("用户名或密码错误，请重新登录")
 
-
 if __name__ == "__main__":
-    main()   
+    main()
