@@ -135,6 +135,22 @@
         });
     });
 </script>
+<script>
+let userAge = prompt('请输入您的年龄：');
+userAge = Number(userAge);
+
+if (isNaN(userAge)) {
+    console.log('请输入一个数字');
+} else if (userAge < 0) {
+    console.log('年龄不能小于0');
+} else if (userAge > 120) {
+    console.log('年龄不能大于120');
+} else if (userAge >= 18) {
+    console.log('您已成年');
+} else {
+    console.log('您未成年');
+}
+</script>
 </body>
 
 </html>
