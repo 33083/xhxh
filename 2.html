@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人简历</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <ul class="nav-links">
+                <li><a href="#header" class="nav-link">个人信息</a></li>
+                <li><a href="#skills" class="nav-link">技能标签</a></li>
+                <li><a href="#experience" class="nav-link">项目经历</a></li>
+                <li><a href="#education" class="nav-link">教育经历</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="resume-container">
+        <!-- 简历头部 -->
+        <header id="header" class="header">
+            <div class="avatar-container">
+                <img src="v2-04dbf909f805d133dd726bb62ba294d9_r.jpg" alt="张三的头像" class="avatar">
+                <span class="online-status"></span> <!-- 在线状态指示器 -->
+            </div>
+            <div class="info">
+                <h1 class="name-title">张三</h1>
+                <p class="title">前端开发工程师</p>
+                <p class="contact">电话：13800000000 | 邮箱：xxx@163.com</p>
+            </div>
+        </header>
+
+        <!-- 技能标签云 -->
+        <section id="skills" class="skills-section">
+            <div class="skills">
+                <span class="skill-tag">HTML</span>
+                <span class="skill-tag">CSS</span>
+                <span class="skill-tag">JavaScript</span>
+                <span class="skill-tag">Vue</span>
+                <span class="skill-tag">React</span>
+                <span class="skill-tag">TypeScript</span>
+                <span class="skill-tag">Git</span>
+                <span class="skill-tag">Webpack</span>
+            </div>
+        </section>
+
+        <!-- 双列布局 -->
+        <div class="content">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <div>
+                    <h3>个人信息</h3>
+                    <p>年龄：22</p>
+                    <p>学历：本科</p>
+                </div>
+                <div class="contact-info">
+                    <h3>联系方式</h3>
+                    <p>手机：13800000000</p>
+                    <p>地址：江西省新余市</p>
+                </div>
+            </aside>
+
+            <!-- 主内容区 -->
+            <main class="main-content">
+                <section class="section">
+                    <h3>综合技能</h3>
+                    <div class="skill-box">
+                        <div class="skill-label">
+                            <span>前端开发综合能力</span>
+                            <span>82%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-bar-fill animated"></div>
+                        </div>
+                    </div>
+                </section>
+                <section id="experience" class="section">
+                    <h3>项目经历</h3>
+                    <ul>
+                        <li>企业官网静态页面开发</li>
+                        <li>后台管理系统页面搭建</li>
+                        <li>教育管理系统页面搭建</li>
+                    </ul>
+                </section>
+                <section id="education" class="section">
+                    <h3>教育经历</h3>
+                    <ul>
+                        <li>XX大学 计算机科学与技术 2022-2026</li>
+                    </ul>
+                </section>
+            </main>
+        </div>
+    </div>
+<script>
+    // 导航栏高亮功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        // 点击导航链接时添加高亮
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // 移除所有链接的 active 类
+                navLinks.forEach(l => l.classList.remove('active'));
+                // 给当前点击的链接添加 active 类
+                this.classList.add('active');
+            });
+        });
+        
+        // 滚动时自动高亮当前区域
+        window.addEventListener('scroll', function() {
+            const sections = ['header', 'skills', 'experience', 'education'];
+            let currentSection = '';
+            
+            sections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const rect = section.getBoundingClientRect();
+                    // 当区域顶部进入视口时
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        currentSection = sectionId;
+                    }
+                }
+            });
+            
+            // 更新导航高亮
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+</body>
+
+</html>
